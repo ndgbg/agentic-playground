@@ -1,14 +1,14 @@
-# Bedrock Agent - Quick Start
+# Bedrock Agents - Quick Start
 
-## What Does This Agent Do?
+## What Does This Do?
 
-An AI assistant powered by Claude on AWS Bedrock that can:
+Creates an AI assistant powered by Claude using AWS Bedrock Agents that can:
 - Answer questions on any topic
 - Have conversations with context memory
 - Help solve problems and provide explanations
 - (Optional) Call custom functions via Lambda action groups
 
-Think of it as ChatGPT on your AWS account with full customization.
+**Note**: This uses AWS Bedrock Agents, not the newer AgentCore platform. For AgentCore (with Runtime, Memory, Gateway, etc.), see [AgentCore documentation](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/).
 
 ## How to Run It
 

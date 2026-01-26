@@ -1,59 +1,38 @@
-# AWS Bedrock AgentCore Tutorial
+# AWS Bedrock Agents Tutorial
 
-Learn how to build and deploy AI agents using **AWS Bedrock AgentCore** - a fully managed agentic platform for building, deploying, and operating highly capable agents securely at scale.
+Learn how to build and deploy AI agents using **AWS Bedrock Agents** - a managed service for creating conversational AI agents with Claude.
+
+## What is AWS Bedrock Agents?
+
+AWS Bedrock Agents is a service that enables you to build AI agents powered by foundation models like Claude. Agents can:
+
+- **Answer questions** and have multi-turn conversations
+- **Call functions** through Lambda action groups
+- **Access knowledge bases** for retrieval-augmented generation (RAG)
+- **Maintain context** within conversation sessions
 
 ## What is AWS Bedrock AgentCore?
 
-[AWS Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) is an enterprise-grade platform that provides the infrastructure and services needed to build production-ready AI agents. Unlike basic chatbots, AgentCore enables agents that can:
+[AWS Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) is a newer, more comprehensive platform announced in December 2024 that provides:
 
-- **Take actions** across your tools, APIs, and data sources
-- **Run securely** with identity management and session isolation
-- **Scale automatically** with serverless infrastructure
-- **Work with any framework** (LangGraph, CrewAI, LlamaIndex, etc.)
-- **Use any model** (Claude, GPT, Gemini, Llama, etc.)
+- **Runtime**: Serverless execution for agents with any framework (LangGraph, CrewAI, LlamaIndex)
+- **Memory**: Persistent memory across sessions
+- **Gateway**: MCP-compatible tool connections
+- **Identity**: OAuth and enterprise authentication
+- **Code Interpreter**: Safe code execution sandbox
+- **Browser**: Web interaction capabilities
+- **Observability**: Tracing and monitoring
+- **Policy**: Business rules and access control
 
-Think of it as the complete operating system for AI agents - handling runtime, memory, security, observability, and more so you can focus on building agent logic.
-
-ore Platform Components
-
-AgentCore provides several integrated services:
-
-### 🚀 Runtime
-Serverless execution environment for agents with fast cold starts, extended runtimes for async tasks, and true session isolation. Works with any framework (LangGraph, CrewAI, LlamaIndex) and any model.
-
-### 🧠 Memory
-mory that persists across sessions. Agents can learn from experiences and share memory stores.
-
-### 🔌 Gateway
-Converts your APIs, Lambda functions, and services into Model Context Protocol (MCP)-compatible tools. Connects to Salesforce, Slack, JIRA, Zoom, and more.
-
-### 🔐 Identity
-Secure authentication and access manageh existing identity providers (Cognito, Okta, Azure AD, Auth0).
-
-### 💻 Code Interpreter
-Isolated sandbox for agents to execute Python, JavaScript, and TypeScript code safely.
-
-### 🌐 Browser
-Cloud-based browser runtime for agents to interact with web applications, fill forms, and extract information.
-
-### 📊 Observability
-Unid tracing, debugging, and monitoring with OpenTelemetry-compatible format. Visualize agent execution paths and debug bottlenecks.
-
-### ✅ Evaluations
-Automated testing and quality assessment for agents. Measure task execution, edge case handling, and output reliability.
-
-### 📋 Policy
-Define business ranguage or Cedar policy language. Control which tools agents can access and under what conditions.
+**This tutorial focuses on Bedrock Agents** (the simpler, managed agent service), not the full AgentCore platform.
 
 ## This Tutorial: Getting Started with Bedrock Agents
-
-This prototype focuses on **Bedr exploring the full AgentCore capabilities.
 
 ### What You'll Build
 
 A conversational AI agent powered by Claude that can:
 - Answer questions and have multi-turn conversations
-- (Optional) Callxternal functions via Lambda action groups
+- (Optional) Call external functions via Lambda action groups
 - Maintain context within sessions
 - Be deployed and managed through AWS
 
@@ -228,32 +207,33 @@ A production agent handling 1000 conversations/day costs roughly $20-30/month.
 
 ## Next Steps
 
-### Explore Full AgentCore Platform
+### Explore AWS Bedrock AgentCore
 
-Once you're comfortable with basic agents, explore the full AgentCore capabilities:
+To use the full AgentCore platform with Runtime, Memory, Gateway, and other advanced features:
 
-1. **AgentCore Runtime** - Deploy agents with any framework (LangGraph, CrewAI)
-2. **AgentCore Memory** - Add persistent memory across sessions
+1. **AgentCore Runtime** - Deploy agents with any framework (LangGraph, CrewAI) using containerized runtimes
+2. **AgentCore Memory** - Add persistent memory across sessions with the Memory API
 3. **AgentCore Gateway** - Connect to MCP tools and enterprise APIs
-4. **AgentCore Identity** - Integrate with your identity provider
-5. **AgentCore Observability** - Monitor and debug in production
-6. **AgentCore Policy** - Define business rules and boundaries
+4. **AgentCore Identity** - Integrate OAuth and enterprise identity providers
+5. **AgentCore Observability** - Monitor and debug with tracing
 
-### Extend This Prototype
+See [AWS Bedrock AgentCore Documentation](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html) for the full platform.
+
+### Extend This Bedrock Agents Tutorial
 
 - Add knowledge bases for RAG capabilities
 - Implement guardrails for content filtering
-- Create a web interface
-ation
-- Add code interpreter capabilities
+- Create a web interface with Streamlit
+- Add multiple action groups for different functions
+- Integrate with enterprise systems
 
 ## Resources
 
-- [AWS Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/)
+- [AWS Bedrock Agents Documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/agents.html)
+- [AWS Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) (Advanced platform)
 - [AgentCore Documentation](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html)
-- [Bedrock Agents Documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/agents.html)
-- [AgentCore FAQs](https://aws.amazon.com/bedrock/agentcore/faqs/)
 - [Claude Model Documentation](https://docs.anthropic.com/claude/docs)
+- [Boto3 Bedrock Agents API](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agent.html)
 
 ## Troubleshooting
 
@@ -261,15 +241,15 @@ See [QUICK_START.md](QUICK_START.md) for common issues and solutions.
 
 ## Contributing
 
-This is a learning prototype. Feel free to extend it with:
+This is a learning tutorial for AWS Bedrock Agents. Feel free to extend it with:
 - More action group examples
 - Knowledge base integration
 - Multi-agent workflows
-- AgentCore Runtime integration
-- MCP tool connections
+- Guardrails implementation
+- Web interface with Streamlit
+
+For AgentCore Runtime examples (containerized agents with any framework), see the [AgentCore documentation](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/).
 
 ---
 
-Built with ❤️ using AWS Bedrock AgentCore and Claude 3
-
-*Content rephrased for compliance with licensing restrictions. See [AWS documentation](https://docs.aws.amazon.com/bedrock-agentcore/) for official details.*
+Built with ❤️ using AWS Bedrock Agents and Claude 3

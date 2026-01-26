@@ -1,10 +1,14 @@
 """
-Simple Bedrock Agent - Easy to understand and run
+AWS Bedrock Agents - Simple Tutorial
 
-What this agent does:
-1. Creates an AI assistant powered by Claude on AWS Bedrock
+What this demonstrates:
+1. Creates an AI assistant powered by Claude using AWS Bedrock Agents
 2. Can answer questions and have conversations
-3. (Optional) Can call external functions like getting weather data
+3. (Optional) Can call external functions via Lambda action groups
+
+Note: This uses AWS Bedrock Agents (managed agent service).
+For the newer AgentCore platform (Runtime, Memory, Gateway, etc.),
+see: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/
 
 How to run:
 1. Install: pip install boto3
@@ -18,14 +22,14 @@ import uuid
 from typing import Optional
 
 class SimpleAgent:
-    """A conversational AI agent using Bedrock"""
+    """A conversational AI agent using AWS Bedrock Agents service"""
     
     def __init__(self, region: str = "us-east-1"):
-        """Initialize the agent client"""
+        """Initialize the Bedrock Agents client"""
         self.region = region
         self.bedrock_agent = boto3.client('bedrock-agent', region_name=region)
         self.bedrock_runtime = boto3.client('bedrock-agent-runtime', region_name=region)
-        print(f"✓ Connected to Bedrock in {region}")
+        print(f"✓ Connected to Bedrock Agents in {region}")
     
     def create_simple_agent(self, name: str = "my-assistant") -> str:
         """
