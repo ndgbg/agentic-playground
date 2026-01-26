@@ -1,0 +1,3 @@
+crewai
+langchain-aws
+boto3
