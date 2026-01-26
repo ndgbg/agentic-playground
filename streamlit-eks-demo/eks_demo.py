@@ -7,6 +7,7 @@ import os
 import requests
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
+from strands_eks_agent import StrandsEKSAgent
 
 # Page configuration
 st.set_page_config(
@@ -371,7 +372,8 @@ class AWSEKSIntegration:
 # Sidebar navigation
 st.sidebar.title("🚀 EKS Demo Navigation")
 page = st.sidebar.selectbox("Choose a page:", [
-    "🏠 Main Demo", 
+    "🏠 Main Demo",
+    "🤖 Strands Agent",
     "🔧 MCP Configuration", 
     "📚 Example Commands", 
     "🔍 Cluster Monitor"
@@ -936,7 +938,126 @@ kubectl get service dotnet-app-service -n dotnet-app -o wide
         else:
             st.warning("⚠️ Please enter a GitHub URL")
 
-# PAGE 2: MCP CONFIGURATION
+# PAGE 2: STRANDS AGENT
+elif page == "🤖 Strands Agent":
+    st.title("🤖 Strands Agent - Natural Language EKS Operations")
+    st.markdown("Interact with your EKS clusters using natural language through the Strands agent.")
+    
+    # Initialize Strands agent
+    if 'aws_access_key' in st.session_state and 'aws_secret_key' in st.session_state:
+        strands_agent = StrandsEKSAgent(
+            region=st.session_state.get('aws_region', 'us-west-2'),
+            access_key=st.session_state['aws_access_key'],
+            secret_key=st.session_state['aws_secret_key']
+        )
+    else:
+        strands_agent = StrandsEKSAgent(region=st.session_state.get('aws_region', 'us-west-2'))
+    
+    # Show available tasks
+    with st.expander("📋 Available Tasks"):
+        tasks = strands_agent.get_available_tasks()
+        for task in tasks:
+            st.markdown(f"- {task}")
+    
+    # Natural language input
+    st.subheader("💬 Ask the Agent")
+    
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        user_task = st.text_input(
+            "What would you like to do?",
+            placeholder="e.g., List all EKS clusters, Check cluster health, Describe my cluster"
+        )
+    with col2:
+        st.write("")
+        st.write("")
+        execute_btn = st.button("🚀 Execute", type="primary")
+    
+    # Quick action buttons
+    st.markdown("**Quick Actions:**")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        if st.button("📋 List Clusters"):
+            user_task = "List all EKS clusters"
+            execute_btn = True
+    
+    with col2:
+        if st.button("🏥 Check Health"):
+            user_task = "Check cluster health"
+            execute_btn = True
+    
+    with col3:
+        if st.button("📊 Cluster Status"):
+            user_task = "Get cluster status"
+            execute_btn = True
+    
+    with col4:
+        if st.button("🏗️ Create Plan"):
+            user_task = "Create cluster plan"
+            execute_btn = True
+    
+    # Execute task
+    if execute_btn and user_task:
+        with st.spinner(f"🤖 Agent processing: {user_task}..."):
+            # Get cluster name from session if needed
+            context = {}
+            if 'selected_cluster' in st.session_state:
+                context['cluster_name'] = st.session_state['selected_cluster']
+            
+            # Execute through Strands agent
+            result = strands_agent.execute_task(user_task, context)
+            
+            # Display results
+            st.markdown("---")
+            st.subheader("📤 Agent Response")
+            
+            if result['status'] == 'success':
+                st.success(f"✅ {result.get('message', 'Task completed successfully')}")
+                
+                # Display data if available
+                if 'data' in result:
+                    st.json(result['data'])
+                
+                # Show next steps if available
+                if 'next_steps' in result:
+                    st.markdown("**Next Steps:**")
+                    for step in result['next_steps']:
+                        st.markdown(f"- {step}")
+                        
+            elif result['status'] == 'info':
+                st.info(f"ℹ️ {result.get('message')}")
+                if 'instructions' in result:
+                    st.markdown("**Instructions:**")
+                    for instruction in result['instructions']:
+                        st.code(instruction, language="bash")
+                        
+            elif result['status'] == 'error':
+                st.error(f"❌ {result.get('message')}")
+                if 'suggestions' in result:
+                    st.markdown("**Try these instead:**")
+                    for suggestion in result['suggestions']:
+                        st.markdown(f"- {suggestion}")
+    
+    # Cluster selector for context
+    st.markdown("---")
+    st.subheader("🎯 Set Context")
+    
+    # Get list of clusters
+    clusters_result = strands_agent.list_clusters()
+    if clusters_result['status'] == 'success' and clusters_result['data']['clusters']:
+        selected_cluster = st.selectbox(
+            "Select a cluster for context:",
+            options=clusters_result['data']['clusters'],
+            key='cluster_selector'
+        )
+        if selected_cluster:
+            st.session_state['selected_cluster'] = selected_cluster
+            st.success(f"✅ Context set to: {selected_cluster}")
+    else:
+        st.info("No clusters found. Create one first!")
+
+# PAGE 3: MCP CONFIGURATION
 elif page == "🔧 MCP Configuration":
     st.title("🔧 EKS MCP Server Configuration")
     st.markdown("Configure your EKS MCP server settings for Kiro IDE integration.")
@@ -1040,7 +1161,7 @@ elif page == "🔧 MCP Configuration":
                 mime="application/json"
             )
 
-# PAGE 3: EXAMPLE COMMANDS
+# PAGE 4: EXAMPLE COMMANDS
 elif page == "📚 Example Commands":
     st.title("📚 EKS MCP Natural Language Commands")
     st.markdown("Here are example natural language commands you can use with the EKS MCP server in Kiro IDE.")
@@ -1081,7 +1202,7 @@ elif page == "📚 Example Commands":
             for i, command in enumerate(commands, 1):
                 st.code(command, language="text")
 
-# PAGE 4: CLUSTER MONITOR
+# PAGE 5: CLUSTER MONITOR
 elif page == "🔍 Cluster Monitor":
     st.title("🔍 Real EKS Cluster Monitor")
     

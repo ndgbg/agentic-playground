@@ -40,7 +40,7 @@ aws configure             # Configure your AWS credentials
 ### 3. Open Browser
 Navigate to `http://localhost:8501`
 
-## 📱 Demo Features (All in One File)
+## 📱 Demo Features
 
 ### 🏠 **Main Demo Page**
 - AWS connection status
@@ -48,6 +48,13 @@ Navigate to `http://localhost:8501`
 - EKS cluster creation
 - Application deployment
 - Real-time monitoring
+
+### 🤖 **Strands Agent**
+- Natural language interface for EKS operations
+- Execute tasks like "List all clusters" or "Check cluster health"
+- Quick action buttons for common operations
+- Context-aware cluster management
+- Agent-based task routing and execution
 
 ### 🔧 **MCP Configuration**
 - Generate MCP server configurations
