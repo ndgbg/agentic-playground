@@ -2,11 +2,12 @@
 
 A single-file Streamlit demo that connects to AWS EKS clusters and deploys .NET Core applications.
 
-## 📁 Simple Project Structure
+## 📁 Project Structure
 
 ```
 streamlit-eks-demo/
-├── eks_demo.py              # Single consolidated demo file
+├── eks_demo.py              # Main Streamlit application
+├── strands_eks_agent.py     # Strands agent for natural language EKS operations
 ├── requirements.txt         # Python dependencies
 ├── setup_prerequisites.sh   # Install AWS tools (kubectl, eksctl)
 ├── run.sh                  # Quick start script
@@ -15,9 +16,10 @@ streamlit-eks-demo/
 
 ## 🎯 What This Demo Does
 
-This Streamlit application provides an interactive interface for deploying .NET applications to AWS EKS:
+This Streamlit application provides an interactive interface for deploying .NET applications to AWS EKS with AI agent capabilities:
 
 - **AWS Integration**: Uses boto3 to connect to your AWS account and interact with EKS, ECR, and EC2 services
+- **Strands Agent**: Natural language interface for EKS operations - ask questions like "List all clusters" or "Check cluster health"
 - **Repository Analysis**: Fetches and analyzes GitHub repositories to detect .NET projects, Dockerfiles, and deployment configurations
 - **Cluster Management**: Creates and configures EKS clusters using eksctl with proper VPC, subnet, and security group settings
 - **Container Deployment**: Builds Docker images, pushes to ECR, and deploys to Kubernetes with proper service and ingress configurations
@@ -84,7 +86,16 @@ Account: 1234...5678
 Region: us-west-2
 ```
 
-### 2. **Analyze GitHub Project**
+### 2. **Use Strands Agent (Optional)**
+Interact with your EKS infrastructure using natural language:
+- Type: "List all EKS clusters" - Agent fetches and displays all clusters
+- Type: "Check cluster health" - Agent analyzes cluster status and health metrics
+- Type: "Create cluster plan" - Agent generates a deployment plan with cost estimates
+- Use quick action buttons for common tasks
+
+The Strands agent parses your request, routes it to the appropriate AWS API calls, and returns structured responses with actionable next steps.
+
+### 3. **Analyze GitHub Project**
 When you provide a GitHub URL, the demo:
 - Fetches the repository metadata using GitHub API
 - Scans for `.csproj` files to detect .NET projects
@@ -97,7 +108,7 @@ GitHub URL: https://github.com/your-username/dotnet-api
 ❌ No Dockerfile found
 ```
 
-### 3. **Deploy to EKS**
+### 4. **Deploy to EKS**
 The deployment process executes these steps:
 - **Cluster Creation**: Runs `eksctl create cluster` with managed node groups, configures VPC and subnets
 - **Namespace Setup**: Creates a Kubernetes namespace to isolate your application
@@ -154,8 +165,9 @@ eksctl delete cluster --name dotnet-demo-cluster --region us-west-2
 1. **EKS Operations** - Hands-on cluster management
 2. **Kubernetes Deployment** - Pod and service creation  
 3. **AWS Integration** - ECR, LoadBalancers, VPC setup
-4. **Natural Language Ops** - MCP server integration
-5. **Live Monitoring** - Cluster health checks
+4. **Agentic AI** - Natural language operations with Strands agent
+5. **MCP Integration** - Model Context Protocol server setup
+6. **Live Monitoring** - Cluster health checks
 
 ## 🔗 Integration with Your Projects
 
@@ -196,10 +208,29 @@ When working correctly, you'll see:
 ## 🔄 Next Steps
 
 After running the demo:
-1. **Deploy your own .NET applications**
-2. **Set up CI/CD pipelines** 
-3. **Configure monitoring and logging**
-4. **Integrate with EKS MCP server in Kiro**
-5. **Scale to production workloads**
+1. **Use Strands agent** for natural language cluster management
+2. **Deploy your own .NET applications**
+3. **Set up CI/CD pipelines** 
+4. **Configure monitoring and logging**
+5. **Integrate with EKS MCP server in Kiro**
+6. **Scale to production workloads**
 
-This single-file demo bridges the gap between learning and doing - you're working with AWS infrastructure, not simulations!
+## 🤖 Strands Agent Capabilities
+
+The integrated Strands agent provides:
+- **Natural Language Processing**: Understands commands like "List clusters", "Check health", "Create plan"
+- **Task Routing**: Automatically routes requests to appropriate AWS API handlers
+- **Context Awareness**: Maintains cluster context for follow-up operations
+- **Structured Responses**: Returns actionable data with next steps
+- **Quick Actions**: Pre-configured buttons for common operations
+
+**Example Tasks:**
+```
+"List all EKS clusters"
+"Check cluster health for my-cluster"
+"Create a cluster plan with 3 nodes"
+"Get cluster status"
+"Describe cluster details"
+```
+
+This demo bridges the gap between learning and doing - you're working with AWS infrastructure, not simulations!
