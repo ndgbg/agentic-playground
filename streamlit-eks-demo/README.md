@@ -1,6 +1,6 @@
-# 🚀 .NET to EKS Deployment Demo
+# 🚀 EKS Deployment Demo with Strands Agent
 
-A single-file Streamlit demo that connects to AWS EKS clusters and deploys .NET Core applications.
+Interactive Streamlit application for managing AWS EKS clusters using natural language and deploying .NET applications.
 
 ## 📁 Project Structure
 
@@ -16,14 +16,26 @@ streamlit-eks-demo/
 
 ## 🎯 What This Demo Does
 
-This Streamlit application provides an interactive interface for deploying .NET applications to AWS EKS with AI agent capabilities:
+This Streamlit application demonstrates agentic AI for AWS EKS management:
 
-- **AWS Integration**: Uses boto3 to connect to your AWS account and interact with EKS, ECR, and EC2 services
-- **Strands Agent**: Natural language interface for EKS operations - ask questions like "List all clusters" or "Check cluster health"
-- **Repository Analysis**: Fetches and analyzes GitHub repositories to detect .NET projects, Dockerfiles, and deployment configurations
-- **Cluster Management**: Creates and configures EKS clusters using eksctl with proper VPC, subnet, and security group settings
-- **Container Deployment**: Builds Docker images, pushes to ECR, and deploys to Kubernetes with proper service and ingress configurations
-- **Live Monitoring**: Polls Kubernetes API to display pod status, logs, and cluster health in real-time
+**Core Features:**
+- **Strands Agent Integration**: Built-in AI agent that understands natural language commands for EKS operations
+  - "List all clusters" → Fetches and displays clusters via boto3
+  - "Check cluster health" → Analyzes cluster status and metrics
+  - "Create cluster plan" → Generates deployment plans with cost estimates
+- **Direct AWS Integration**: Uses boto3 to interact with EKS, ECR, and EC2 services
+- **.NET Deployment Pipeline**: Analyzes GitHub repos, builds Docker images, deploys to Kubernetes
+- **MCP Config Generator**: Creates configuration files for Kiro IDE integration (doesn't run MCP server itself)
+- **Live Monitoring**: Real-time pod status, logs, and cluster health via Kubernetes API
+
+**What This Is:**
+- ✅ Working demo of Strands agent for EKS operations
+- ✅ Complete .NET to EKS deployment workflow
+- ✅ Tool to generate MCP server configs for Kiro IDE
+
+**What This Is NOT:**
+- ❌ Does not run an MCP server (generates configs only)
+- ❌ Not a production deployment tool
 
 ## 🚀 Quick Start
 
@@ -52,16 +64,19 @@ Navigate to `http://localhost:8501`
 - Real-time monitoring
 
 ### 🤖 **Strands Agent**
-- Natural language interface for EKS operations
+Natural language interface for EKS operations using a custom AI agent implementation:
 - Execute tasks like "List all clusters" or "Check cluster health"
 - Quick action buttons for common operations
 - Context-aware cluster management
-- Agent-based task routing and execution
+- Agent parses requests and routes to AWS APIs
+- Returns structured responses with next steps
 
-### 🔧 **MCP Configuration**
-- Generate MCP server configurations
-- Download ready-to-use `mcp.json` files
-- One-click Kiro integration
+### 🔧 **MCP Configuration Generator**
+Generate MCP server configurations for external use:
+- Creates `mcp.json` files for Kiro IDE
+- Configures EKS MCP server settings
+- Download and use in `.kiro/settings/mcp.json`
+- Note: This generates configs, doesn't run the MCP server
 
 ### 📚 **Example Commands**
 - Natural language EKS commands
@@ -162,12 +177,12 @@ eksctl delete cluster --name dotnet-demo-cluster --region us-west-2
 
 ## 🎓 What You'll Learn
 
-1. **EKS Operations** - Hands-on cluster management
-2. **Kubernetes Deployment** - Pod and service creation  
-3. **AWS Integration** - ECR, LoadBalancers, VPC setup
-4. **Agentic AI** - Natural language operations with Strands agent
-5. **MCP Integration** - Model Context Protocol server setup
-6. **Live Monitoring** - Cluster health checks
+1. **Agentic AI Patterns** - Building AI agents that understand natural language and route to APIs
+2. **EKS Operations** - Hands-on cluster management with boto3
+3. **Kubernetes Deployment** - Pod and service creation  
+4. **AWS Integration** - ECR, LoadBalancers, VPC setup
+5. **MCP Protocol** - Generating Model Context Protocol configurations
+6. **Live Monitoring** - Cluster health checks and real-time status
 
 ## 🔗 Integration with Your Projects
 
@@ -183,11 +198,13 @@ The demo will:
 - ✅ Provide working endpoints
 
 ### Integration with Kiro IDE
-1. **Generate MCP config** in the demo
+1. **Generate MCP config** in the "🔧 MCP Configuration" page
 2. **Download `mcp.json`** file
 3. **Place in `.kiro/settings/mcp.json`**
-4. **Use natural language** commands in Kiro
-5. **Deploy to clusters** created by this demo
+4. **Restart Kiro** to load the MCP server
+5. **Use natural language** commands in Kiro (via the actual EKS MCP server, not this demo)
+
+Note: This demo generates the config file. Kiro will connect to the actual AWS EKS MCP server.
 
 ## 🚨 Important Notes
 
@@ -217,20 +234,38 @@ After running the demo:
 
 ## 🤖 Strands Agent Capabilities
 
-The integrated Strands agent provides:
-- **Natural Language Processing**: Understands commands like "List clusters", "Check health", "Create plan"
-- **Task Routing**: Automatically routes requests to appropriate AWS API handlers
-- **Context Awareness**: Maintains cluster context for follow-up operations
-- **Structured Responses**: Returns actionable data with next steps
-- **Quick Actions**: Pre-configured buttons for common operations
+The integrated Strands agent is a custom implementation that demonstrates agentic AI patterns:
 
-**Example Tasks:**
+**How It Works:**
+1. User enters natural language command
+2. Agent parses and identifies intent
+3. Routes to appropriate AWS API handler (boto3)
+4. Executes operation and formats response
+5. Returns structured data with actionable next steps
+
+**Supported Operations:**
+- **List Clusters**: `"List all EKS clusters"` → Calls `eks_client.list_clusters()`
+- **Describe Cluster**: `"Describe cluster my-cluster"` → Calls `eks_client.describe_cluster()`
+- **Check Health**: `"Check cluster health"` → Analyzes cluster status and endpoint
+- **Create Plan**: `"Create cluster plan"` → Generates deployment plan with cost estimates
+- **Get Status**: `"Get cluster status"` → Returns current cluster state
+
+**Example Interactions:**
 ```
-"List all EKS clusters"
-"Check cluster health for my-cluster"
-"Create a cluster plan with 3 nodes"
-"Get cluster status"
-"Describe cluster details"
+You: "List all EKS clusters"
+Agent: ✅ Found 3 cluster(s) in us-west-2
+       [my-cluster, dev-cluster, prod-cluster]
+
+You: "Check cluster health for my-cluster"  
+Agent: ✅ Cluster is healthy
+       Status: ACTIVE, Version: 1.28, Endpoint accessible
+
+You: "Create a cluster plan with 3 nodes"
+Agent: ✅ Cluster creation plan generated
+       Estimated time: 15-20 minutes
+       Estimated cost: ~$0.22/hour
 ```
+
+This is a working example of how to build AI agents that bridge natural language and cloud APIs.
 
 This demo bridges the gap between learning and doing - you're working with AWS infrastructure, not simulations!
