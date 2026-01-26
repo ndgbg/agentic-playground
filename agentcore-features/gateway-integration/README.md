@@ -1,6 +1,393 @@
 # AgentCore Gateway Integration
 
-Connect AI agents to enterprise APIs and tools using AWS Bedrock AgentCore Gateway and Model Context Protocol (MCP).
+Connect AI agents to external tools using AWS Bedrock AgentCore Gateway. This demo shows a working implementation of an agent with multiple tools.
+
+## What's Implemented
+
+A fully functional agent with 4 tools:
+- **Weather Tool**: Get weather for any city
+- **Database Search**: Query simulated customer/order database
+- **Notifications**: Send messages to users
+- **Calculator**: Perform mathematical calculations
+
+The agent automatically selects and uses the right tool based on user queries.
+
+## Quick Start
+
+### Run Locally
+
+```bash
+cd agentcore-features/gateway-integration
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run demo with test cases
+python gateway_agent.py
+```
+
+**Output:**
+```
+Gateway Integration Demo
+==================================================
+
+Query: What's the weather in Seattle?
+Response: Weather in Seattle: Rainy, 52°F
+--------------------------------------------------
+
+Query: Search for customers in the database
+Response: Found 2 customers: Alice Smith (C001), Bob Jones (C002)
+--------------------------------------------------
+
+Query: Calculate 25 * 4
+Response: The result is 100.0
+--------------------------------------------------
+```
+
+### Deploy to AgentCore
+
+```bash
+# Configure for deployment
+agentcore configure -e gateway_agent.py
+
+# Deploy to AWS
+agentcore deploy
+
+# Test deployed agent
+agentcore invoke '{"prompt": "What is the weather in Miami?"}'
+```
+
+### Test with curl
+
+```bash
+# Start local server
+python gateway_agent.py
+
+# In another terminal
+curl -X POST http://localhost:8080/invocations \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Calculate 15 + 27"}'
+```
+
+## How It Works
+
+### Tool Definition
+
+Tools are defined with the `@tool` decorator:
+
+```python
+@tool
+def get_weather(location: str) -> str:
+    """
+    Get current weather for a location.
+    
+    Args:
+        location: City name (e.g., "Seattle")
+    
+    Returns:
+        Weather description
+    """
+    # Implementation
+    return f"Weather in {location}: Sunny, 72°F"
+```
+
+### Agent Setup
+
+The agent is configured with all available tools:
+
+```python
+agent = Agent()
+agent.add_tool(get_weather)
+agent.add_tool(search_database)
+agent.add_tool(send_notification)
+agent.add_tool(calculate)
+
+# Agent automatically uses tools as needed
+result = agent(user_message)
+```
+
+### Automatic Tool Selection
+
+The agent analyzes the query and selects appropriate tools:
+
+```
+User: "What's the weather in Seattle?"
+→ Agent calls get_weather("Seattle")
+→ Returns: "Weather in Seattle: Rainy, 52°F"
+
+User: "Calculate 25 * 4"
+→ Agent calls calculate("25 * 4")
+→ Returns: "100.0"
+```
+
+## Customizing Tools
+
+### Add Your Own Tool
+
+```python
+@tool
+def your_custom_tool(param: str) -> str:
+    """
+    Description of what your tool does.
+    
+    Args:
+        param: Parameter description
+    
+    Returns:
+        What the tool returns
+    """
+    # Your implementation
+    return result
+
+# Add to agent
+agent.add_tool(your_custom_tool)
+```
+
+### Connect to Real APIs
+
+Replace simulated data with actual API calls:
+
+```python
+@tool
+def get_weather(location: str) -> str:
+    """Get real weather data"""
+    import requests
+    
+    api_key = os.getenv("WEATHER_API_KEY")
+    response = requests.get(
+        f"https://api.weather.com/v1/current",
+        params={"location": location, "key": api_key}
+    )
+    
+    data = response.json()
+    return f"Weather in {location}: {data['condition']}, {data['temp']}°F"
+```
+
+### Database Integration
+
+```python
+@tool
+def search_database(query: str) -> dict:
+    """Search real database"""
+    import psycopg2
+    
+    conn = psycopg2.connect(os.getenv("DATABASE_URL"))
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT * FROM customers WHERE name LIKE %s", (f"%{query}%",))
+    results = cursor.fetchall()
+    
+    return {"results": results, "count": len(results)}
+```
+
+## Example Queries
+
+Try these queries with the demo:
+
+**Weather:**
+- "What's the weather in New York?"
+- "Is it raining in Seattle?"
+- "Tell me the weather in San Francisco"
+
+**Database:**
+- "Search for customers"
+- "Find orders in the database"
+- "Look up customer information"
+
+**Calculations:**
+- "Calculate 123 * 456"
+- "What is 50 + 75?"
+- "Compute 100 / 4"
+
+**Notifications:**
+- "Send a notification to alice@example.com saying 'Meeting at 3pm'"
+- "Notify bob@example.com about the deadline"
+
+**Multi-Tool:**
+- "Check the weather in Miami and send a notification to alice@example.com"
+- "Search for customer orders and calculate the total"
+
+## Tool Best Practices
+
+### Clear Descriptions
+
+```python
+@tool
+def process_data(data: str) -> dict:
+    """
+    Process customer data and return insights.
+    
+    This tool analyzes customer behavior patterns and returns
+    actionable insights for marketing campaigns.
+    
+    Args:
+        data: Customer data in JSON format
+    
+    Returns:
+        Dictionary with insights and recommendations
+    """
+```
+
+### Type Hints
+
+Always use type hints for parameters and return values:
+
+```python
+from typing import List, Dict, Optional
+
+@tool
+def search_items(
+    query: str,
+    category: Optional[str] = None,
+    limit: int = 10
+) -> List[Dict]:
+    """Search with optional filters"""
+```
+
+### Error Handling
+
+```python
+@tool
+def api_call(endpoint: str) -> dict:
+    """Call external API with error handling"""
+    try:
+        response = requests.get(endpoint, timeout=10)
+        response.raise_for_status()
+        return {"success": True, "data": response.json()}
+    except requests.Timeout:
+        return {"success": False, "error": "Request timed out"}
+    except requests.RequestException as e:
+        return {"success": False, "error": str(e)}
+```
+
+## Security Considerations
+
+### API Keys
+
+Store sensitive data in environment variables:
+
+```python
+import os
+
+API_KEY = os.getenv("API_KEY")
+DATABASE_URL = os.getenv("DATABASE_URL")
+```
+
+### Input Validation
+
+```python
+@tool
+def safe_calculation(expression: str) -> float:
+    """Safely evaluate math expressions"""
+    # Only allow numbers and basic operators
+    allowed_chars = set("0123456789+-*/(). ")
+    if not all(c in allowed_chars for c in expression):
+        return "Error: Invalid characters in expression"
+    
+    try:
+        result = eval(expression, {"__builtins__": {}}, {})
+        return float(result)
+    except Exception as e:
+        return f"Error: {str(e)}"
+```
+
+### Rate Limiting
+
+```python
+from functools import lru_cache
+from time import time
+
+@tool
+@lru_cache(maxsize=100)
+def cached_api_call(endpoint: str) -> dict:
+    """Cached API call to reduce requests"""
+    return requests.get(endpoint).json()
+```
+
+## Monitoring
+
+### Tool Usage Tracking
+
+```python
+tool_calls = {}
+
+@tool
+def tracked_tool(param: str) -> str:
+    """Tool with usage tracking"""
+    tool_calls["tracked_tool"] = tool_calls.get("tracked_tool", 0) + 1
+    # Implementation
+    return result
+
+# View usage
+print(f"Tool called {tool_calls['tracked_tool']} times")
+```
+
+### Logging
+
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@tool
+def logged_tool(param: str) -> str:
+    """Tool with logging"""
+    logger.info(f"Tool called with param: {param}")
+    result = process(param)
+    logger.info(f"Tool returned: {result}")
+    return result
+```
+
+## Troubleshooting
+
+### Tool Not Being Called
+
+**Issue:** Agent doesn't use your tool
+
+**Solutions:**
+1. Check tool description is clear
+2. Verify tool is added to agent: `agent.add_tool(your_tool)`
+3. Make sure query matches tool's purpose
+4. Add more descriptive docstring
+
+### Import Errors
+
+**Issue:** `ModuleNotFoundError`
+
+**Solution:**
+```bash
+pip install -r requirements.txt
+```
+
+### Agent Returns Generic Response
+
+**Issue:** Agent doesn't use tools, just answers directly
+
+**Solution:**
+- Make tool descriptions more specific
+- Explicitly mention tool capabilities in system prompt
+- Test with queries that clearly need tool usage
+
+## Next Steps
+
+1. **Add Real APIs**: Replace simulated data with actual API calls
+2. **Add More Tools**: Implement tools for your specific use case
+3. **Deploy to Production**: Use `agentcore deploy` for production deployment
+4. **Add Authentication**: Implement OAuth or API key validation
+5. **Monitor Usage**: Set up CloudWatch dashboards
+
+## Resources
+
+- [AgentCore Gateway Documentation](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway.html)
+- [Tool Development Guide](https://strandsagents.com/latest/documentation/docs/user-guide/tools/)
+- [MCP Protocol](https://modelcontextprotocol.io/)
+
+---
+
+**Status:** ✅ Fully implemented and tested  
+**Complexity:** Low-Medium  
+**Time to Deploy:** 30 minutes
 
 ## Overview
 
