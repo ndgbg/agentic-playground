@@ -1,36 +1,30 @@
 # AutoGen Conversational Agents
 
-Multi-agent conversations with code generation and execution capabilities.
+Multi-agent conversations with code generation.
 
-## Overview
-
-Demonstrates AutoGen's conversational agents:
-- **Assistant**: AI agent that writes code
-- **Executor**: Executes and validates code
-- **User Proxy**: Represents human input
-
-## Features
-
-- Multi-turn conversations
-- Code generation and execution
-- Human-in-the-loop workflows
-- Automatic error handling and retry
-
-## Setup
-
+## Quick Start
 ```bash
 pip install -r requirements.txt
-```
-
-## Usage
-
-```python
 python code_assistant.py
 ```
 
-## Example
+## Agents
+- **Assistant**: Writes code
+- **Executor**: Runs code
+- **User Proxy**: Human input
 
-User: "Create a function to calculate fibonacci numbers"
-Assistant: Generates Python code
-Executor: Runs and validates the code
-Output: Working fibonacci function
+## Features
+- Code generation
+- Automatic execution
+- Error handling
+- Multi-turn conversations
+
+## Example
+```
+Task: "Calculate fibonacci"
+→ Assistant generates code
+→ Executor runs it
+→ Returns: [0, 1, 1, 2, 3, 5, 8...]
+```
+
+**Status:** ✅ Implemented | **Complexity:** Medium | **Time:** 1 hour

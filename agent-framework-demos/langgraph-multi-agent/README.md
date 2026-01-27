@@ -1,43 +1,31 @@
 # LangGraph Multi-Agent System
 
-A demonstration of multiple specialized agents collaborating using LangGraph state management.
+Collaborative agents with state management.
 
-## Overview
-
-This demo shows three agents working together:
-- **Researcher**: Gathers information and facts
-- **Writer**: Creates content based on research
-- **Reviewer**: Reviews and provides feedback
-
-## Architecture
-
-```
-User Query → Researcher → Writer → Reviewer → Final Output
-              ↓           ↓         ↓
-           [State]    [State]   [State]
-```
-
-## Setup
-
+## Quick Start
 ```bash
 pip install -r requirements.txt
-```
-
-## Usage
-
-```python
 python multi_agent.py
 ```
 
+## Agents
+- **Researcher**: Gathers information
+- **Writer**: Creates content
+- **Reviewer**: Provides feedback
+
 ## Features
+- State-based handoffs
+- Conditional routing
+- Iterative improvement
+- Memory across agents
 
-- State management across agents
-- Agent handoffs with context
-- Conditional routing based on agent output
-- Deploy to AgentCore Runtime
+## Example
+```
+Query: "Write about AI"
+→ Researcher gathers facts
+→ Writer creates draft
+→ Reviewer approves/requests changes
+→ Final output
+```
 
-## Files
-
-- `multi_agent.py` - Main agent implementation
-- `deploy.py` - AgentCore deployment script
-- `requirements.txt` - Dependencies
+**Status:** ✅ Implemented | **Complexity:** Medium | **Time:** 1 hour

@@ -1,12 +1,31 @@
 # Policy Controls
 
-Cedar policies for access control.
+Cedar policies for access control and compliance.
+
+## Quick Start
+```bash
+pip install -r requirements.txt
+python policy_agent.py
+```
 
 ## Features
-- Cedar policy language
-- Access control
-- Compliance enforcement
+- Role-based access control
+- Resource permissions
+- Policy enforcement
 - Audit logging
 
-## Coming Soon
-Full implementation.
+## Example
+```
+Action: write_data
+Role: user
+Resource: customers
+Result: ❌ DENIED - Role not authorized
+```
+
+## Use Cases
+- Access control
+- Compliance enforcement
+- Security policies
+- Audit trails
+
+**Status:** ✅ Implemented | **Complexity:** Medium | **Time:** 45 min

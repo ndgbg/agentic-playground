@@ -1,34 +1,30 @@
 # CrewAI Task Automation
 
-Automated content creation pipeline using CrewAI with role-based agents.
+Role-based agents working in crews.
 
-## Overview
-
-A crew of agents working together to create blog posts:
-- **Researcher**: Finds relevant information
-- **Writer**: Creates the article
-- **Editor**: Polishes the content
-
-## Features
-
-- Sequential task execution
-- Role-based agent specialization
-- Tool integration
-- Automated workflow
-
-## Setup
-
+## Quick Start
 ```bash
 pip install -r requirements.txt
-```
-
-## Usage
-
-```python
 python content_crew.py
 ```
 
-## Example Output
+## Crew
+- **Research Specialist**: Finds information
+- **Content Writer**: Creates articles
+- **Editor**: Polishes content
 
-Input: "AI agents in healthcare"
-Output: Complete blog post with research, writing, and editing
+## Features
+- Sequential tasks
+- Role specialization
+- Automatic delegation
+- Context sharing
+
+## Example
+```
+Topic: "Future of AI"
+→ Research: 5 key points
+→ Write: 500-word article
+→ Edit: Publication-ready
+```
+
+**Status:** ✅ Implemented | **Complexity:** Low-Medium | **Time:** 45 min

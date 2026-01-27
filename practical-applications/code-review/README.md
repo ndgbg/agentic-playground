@@ -2,11 +2,29 @@
 
 Automated PR analysis and security scanning.
 
-## Features
-- PR analysis
-- Security scanning
-- Best practice suggestions
-- Code quality metrics
+## Quick Start
+```bash
+pip install -r requirements.txt
+python code_review_agent.py
+```
 
-## Coming Soon
-Full implementation.
+## Checks
+- Security vulnerabilities
+- Code quality issues
+- Best practices
+- Improvement suggestions
+
+## Example
+```
+Code: SQL injection vulnerability
+Review: ❌ Security: SQL injection detected
+Suggestion: Use parameterized queries
+```
+
+## Use Cases
+- Pull request reviews
+- Security audits
+- Code quality checks
+- Best practice enforcement
+
+**Status:** ✅ Implemented | **Complexity:** Medium | **Time:** 1 hour
