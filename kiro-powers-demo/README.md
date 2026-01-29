@@ -1,6 +1,6 @@
 # Kiro Powers Demo
 
-On-demand specialized agent capabilities inspired by AWS Kiro Powers.
+**Note:** This is a **conceptual demonstration** of the Kiro Powers pattern. AWS Kiro Powers is a real feature announced at re:Invent 2025, but this demo simulates the concept using Strands agents to show how on-demand capability loading works.
 
 ## What This Demonstrates
 
@@ -341,7 +341,22 @@ agent.invoke("Activate datadog")  # Monitoring after deploy
 
 ---
 
+**About This Demo:**  
+This is a conceptual implementation showing how the Kiro Powers pattern works. To use actual AWS Kiro Powers, you would use the Kiro IDE/CLI with real integrations to Stripe, Figma, Datadog, etc.
+
+**Real AWS Kiro Powers:**  
+- Available in Kiro IDE (kiro.dev)
+- One-click activation of tool expertise
+- Real API integrations with partner tools
+- Part of AWS's Frontier Agent ecosystem
+
+**This Demo:**  
+- Educational implementation of the pattern
+- Simulated tool integrations
+- Shows the concept of on-demand capability loading
+- Can be extended with real API calls
+
 **Inspired by:** AWS Kiro Powers (announced at re:Invent 2025)  
 **Complexity:** Medium  
 **Time to Implement:** 2-3 hours  
-**Production Ready:** Extend with real API integrations
+**Production Ready:** Extend with real API integrations or use actual AWS Kiro Powers

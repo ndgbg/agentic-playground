@@ -1,8 +1,11 @@
 """
-Kiro Powers Demo - On-Demand Specialized Agent Capabilities
+Kiro Powers Demo - Conceptual Implementation
 
-Demonstrates the Kiro Powers concept: loading specialized expertise on-demand
+This demonstrates the Kiro Powers pattern: loading specialized expertise on-demand
 rather than maintaining all knowledge in context simultaneously.
+
+NOTE: This is an educational demo simulating the Kiro Powers concept.
+Real AWS Kiro Powers is available at kiro.dev with actual tool integrations.
 """
 
 from strands import Agent, tool
