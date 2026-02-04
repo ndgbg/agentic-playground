@@ -1,5 +1,10 @@
 # Building an Agentic AI Playground: 20 Production-Ready Demos
 
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock-orange.svg)](https://aws.amazon.com/bedrock/)
+[![MCP Servers](https://img.shields.io/badge/MCP-Servers-green.svg)](https://modelcontextprotocol.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ## What Does "Agentic AI Product Manager" Mean?
 
 An Agentic AI Product Manager isn't just someone who talks about AI agents—they build them. They understand the technical architecture, can implement working prototypes, and bridge the gap between AI capabilities and real business problems.
