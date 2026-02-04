@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Product Review Board</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            display: none;
+        }
+        
+        .verdict {
+            font-size: 1.5em;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .verdict.blocked {
+            background: #fee;
+            color: #c00;
+        }
+        
+        .verdict.needs-work {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .verdict.concerns {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .verdict.approved {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .issue {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .issue.critical {
+            border-left-color: #dc3545;
+        }
+        
+        .issue.high {
+            border-left-color: #fd7e14;
+        }
+        
+        .issue.medium {
+            border-left-color: #ffc107;
+        }
+        
+        .issue-type {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        
+        .issue-finding {
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .issue-question {
+            color: #333;
+            font-style: italic;
+        }
+        
+        .question {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .persona {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        
+        .section-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin: 25px 0 15px 0;
+            color: #333;
+        }
+        
+        .example {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 AI Product Review Board</h1>
+            <p>Your toughest stakeholder — automated</p>
+        </div>
+        
+        <div class="card">
+            <h2>Paste Your Product Spec</h2>
+            <textarea id="specInput" placeholder="Paste your PRD, feature spec, or product proposal here...
+
+Example:
+New Feature: AI-Powered Content Generator
+
+We want to build an AI that automatically generates social media posts for users.
+It will analyze their past content and create new posts in their style.
+
+The AI will post automatically to save users time.
+
+This will improve engagement and make our platform better."></textarea>
+            
+            <button onclick="reviewSpec()">🔍 Review My Spec</button>
+            
+            <div class="example">
+                💡 <strong>Tip:</strong> The board checks for ambiguous goals, missing metrics, unsafe autonomy, and weak success criteria. It then asks brutal questions from different stakeholder personas.
+            </div>
+        </div>
+        
+        <div id="results" class="results card">
+            <div id="verdict" class="verdict"></div>
+            
+            <div id="issues-section">
+                <div class="section-title">🚨 Issues Found</div>
+                <div id="issues"></div>
+            </div>
+            
+            <div id="questions-section">
+                <div class="section-title">💬 Brutal Questions</div>
+                <div id="questions"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function reviewSpec() {
+            const spec = document.getElementById('specInput').value.trim();
+            
+            if (!spec) {
+                alert('Please paste a spec to review!');
+                return;
+            }
+            
+            const review = analyzeSpec(spec);
+            displayResults(review);
+        }
+        
+        function analyzeSpec(text) {
+            const issues = [];
+            const questions = [];
+            
+            // Check for clear goal
+            const hasGoal = /goal|objective|problem|purpose|why/i.test(text) && text.length > 100;
+            if (!hasGoal) {
+                issues.push({
+                    type: "🎯 Ambiguous Goal",
+                    severity: "HIGH",
+                    finding: "Goal is unclear or missing",
+                    question: "What specific problem are we solving? For whom?"
+                });
+            }
+            
+            // Check for eval criteria
+            const hasEval = /metric|measure|kpi|success|evaluate|track/i.test(text);
+            if (!hasEval) {
+                issues.push({
+                    type: "📊 Missing Eval",
+                    severity: "HIGH",
+                    finding: "No success metrics defined",
+                    question: "How will we know if this works? What does success look like?"
+                });
+            }
+            
+            // Check for unsafe autonomy
+            const hasAutonomy = /autonomous|automatically|ai decides|without human/i.test(text);
+            const hasGuardrails = /review|approval|human-in-loop|oversight|guardrail/i.test(text);
+            if (hasAutonomy && !hasGuardrails) {
+                issues.push({
+                    type: "⚠️ Unsafe Autonomy",
+                    severity: "CRITICAL",
+                    finding: "AI autonomy without proper guardrails",
+                    question: "What happens when the AI makes a mistake? Who's accountable?"
+                });
+            }
+            
+            // Check for weak metrics
+            const hasWeak = /improve|better|enhance|optimize|increase engagement/i.test(text);
+            const hasNumbers = /\d/.test(text);
+            if (hasWeak && !hasNumbers) {
+                issues.push({
+                    type: "📉 Weak Metrics",
+                    severity: "MEDIUM",
+                    finding: "Success metrics are vague or unmeasurable",
+                    question: "Can we measure this objectively? What's the baseline?"
+                });
+            }
+            
+            // Generate questions
+            questions.push({
+                persona: "😤 Skeptical CTO",
+                question: "How does this scale to 10x users? What breaks first?"
+            });
+            
+            questions.push({
+                persona: "📊 Data-Driven CEO",
+                question: "What's the ROI? Show me the numbers, not the vision."
+            });
+            
+            questions.push({
+                persona: "👥 User Advocate",
+                question: "Did you actually talk to users? Or are we building what we think they want?"
+            });
+            
+            questions.push({
+                persona: "🛡️ Risk Manager",
+                question: "What's the worst that could happen? Have we thought through edge cases?"
+            });
+            
+            if (/ai|ml/i.test(text)) {
+                questions.push({
+                    persona: "🤖 AI Ethics Officer",
+                    question: "What biases might this perpetuate? How do we audit the AI's decisions?"
+                });
+            }
+            
+            if (/user|customer/i.test(text)) {
+                questions.push({
+                    persona: "💰 Finance Director",
+                    question: "What's the customer acquisition cost? How long to break even?"
+                });
+            }
+            
+            // Determine verdict
+            const critical = issues.filter(i => i.severity === "CRITICAL").length;
+            const high = issues.filter(i => i.severity === "HIGH").length;
+            
+            let verdict;
+            if (critical > 0) {
+                verdict = {
+                    status: "🚫 BLOCKED",
+                    message: "Critical issues must be addressed before proceeding",
+                    class: "blocked"
+                };
+            } else if (high > 2) {
+                verdict = {
+                    status: "⚠️ NEEDS WORK",
+                    message: "Multiple high-severity issues found",
+                    class: "needs-work"
+                };
+            } else if (high > 0) {
+                verdict = {
+                    status: "🤔 CONCERNS",
+                    message: "Some issues to address",
+                    class: "concerns"
+                };
+            } else {
+                verdict = {
+                    status: "✅ APPROVED",
+                    message: "Looks solid, but still answer the questions",
+                    class: "approved"
+                };
+            }
+            
+            return { issues, questions, verdict };
+        }
+        
+        function displayResults(review) {
+            const resultsDiv = document.getElementById('results');
+            const verdictDiv = document.getElementById('verdict');
+            const issuesDiv = document.getElementById('issues');
+            const questionsDiv = document.getElementById('questions');
+            
+            // Show results
+            resultsDiv.style.display = 'block';
+            
+            // Display verdict
+            verdictDiv.className = `verdict ${review.verdict.class}`;
+            verdictDiv.innerHTML = `
+                <div>${review.verdict.status}</div>
+                <div style="font-size: 0.7em; margin-top: 10px;">${review.verdict.message}</div>
+            `;
+            
+            // Display issues
+            if (review.issues.length > 0) {
+                issuesDiv.innerHTML = review.issues.map(issue => `
+                    <div class="issue ${issue.severity.toLowerCase()}">
+                        <div class="issue-type">${issue.type} [${issue.severity}]</div>
+                        <div class="issue-finding">Finding: ${issue.finding}</div>
+                        <div class="issue-question">Question: ${issue.question}</div>
+                    </div>
+                `).join('');
+            } else {
+                issuesDiv.innerHTML = '<div class="issue" style="border-left-color: #28a745;">✅ No major issues found</div>';
+            }
+            
+            // Display questions
+            questionsDiv.innerHTML = review.questions.map(q => `
+                <div class="question">
+                    <div class="persona">${q.persona}</div>
+                    <div>${q.question}</div>
+                </div>
+            `).join('');
+            
+            // Scroll to results
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
