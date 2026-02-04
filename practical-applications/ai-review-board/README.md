@@ -2,33 +2,237 @@
 
 **Your toughest stakeholder — automated.**
 
-## What It Does
+## Two Versions
 
-Reviews product specs and flags common issues:
-- 🎯 **Ambiguous goals** - Unclear problem or purpose
-- 📊 **Missing eval** - No success metrics defined
-- ⚠️ **Unsafe autonomy** - AI decisions without guardrails
-- 📉 **Weak success metrics** - Vague or unmeasurable KPIs
+### 1. Rule-Based (review_board.py)
+Simple pattern matching for quick checks. No API key needed.
 
-Then asks **brutal questions** from different personas:
-- 😤 Skeptical CTO
-- 📊 Data-Driven CEO
-- 👥 User Advocate
-- 🛡️ Risk Manager
-- 🤖 AI Ethics Officer
-- 💰 Finance Director
-
-## Why It Spreads
-
-✅ **Funny + useful** - Makes review process entertaining  
-✅ **Improves quality** - Catches issues early  
-✅ **Easy to demo** - Run it, get instant feedback  
+### 2. Agentic (agentic_review_board.py) ⭐ NEW
+**True agentic AI** that:
+- ✅ Uses LLM reasoning to understand specs
+- ✅ Asks contextual follow-up questions
+- ✅ Suggests specific improvements
+- ✅ Adapts analysis based on content
+- ✅ Provides evidence-based feedback
 
 ## Quick Start
 
+### Agentic Version (Recommended)
+
 ```bash
+# Set your API key
+export ANTHROPIC_API_KEY=your_key_here
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run review
+python agentic_review_board.py
+```
+
+### Rule-Based Version
+
+```bash
+# No setup needed
 python review_board.py
 ```
+
+### Web Interface
+
+```bash
+open index.html
+```
+
+## What Makes It Agentic?
+
+**Rule-based version:**
+- Pattern matching (if "autonomous" then flag)
+- Fixed questions
+- No reasoning
+
+**Agentic version:**
+- LLM understands context
+- Reasons about implications
+- Asks relevant follow-ups
+- Suggests specific fixes
+- Quotes evidence from spec
+
+## Example: Agentic Review
+
+```python
+from agentic_review_board import AgenticReviewBoard
+
+board = AgenticReviewBoard()
+
+# Review spec
+review = board.review_spec(your_spec_text)
+
+# Ask follow-up
+answer = board.ask_followup(
+    your_spec_text,
+    review,
+    "What metrics should we track?"
+)
+
+# Get improvement suggestions
+improvements = board.suggest_improvements(
+    your_spec_text,
+    focus_area="success metrics"
+)
+```
+
+## Agentic Features
+
+### 1. Intelligent Analysis
+Understands nuance and context, not just keywords.
+
+### 2. Evidence-Based Feedback
+Quotes specific parts of your spec when identifying issues.
+
+### 3. Follow-Up Questions
+Ask anything about the spec and get intelligent answers.
+
+### 4. Improvement Suggestions
+Get concrete rewrites and additions, not just criticism.
+
+### 5. Adaptive Personas
+Questions adapt based on what's actually in your spec.
+
+## Output Example
+
+```
+🎭 AGENTIC AI PRODUCT REVIEW BOARD
+Powered by Claude - Intelligent spec analysis with reasoning
+======================================================================
+
+VERDICT: 🚫 BLOCKED
+Reasoning: This spec has critical gaps in safety, metrics, and user validation
+that must be addressed before development.
+
+🚨 CRITICAL ISSUES:
+----------------------------------------------------------------------
+
+❌ No user consent mechanism for AI-generated content
+   Evidence: "The AI will post automatically"
+   Impact: Users may not want AI posting on their behalf without review
+
+❌ Missing success metrics and evaluation criteria
+   Evidence: "improve engagement and make our platform better"
+   Impact: No way to measure if feature actually works
+
+💬 QUESTIONS FROM THE BOARD:
+----------------------------------------------------------------------
+
+😤 Skeptical CTO
+  • What happens when the AI generates inappropriate content?
+  • How do you prevent the AI from learning and amplifying harmful patterns?
+
+📊 Data-Driven CEO
+  • What's the baseline engagement rate we're trying to improve?
+  • How much will this cost to build and operate vs. expected revenue impact?
+
+👥 User Advocate
+  • Have you validated that users actually want AI posting for them?
+  • What control do users have over the AI's output?
+
+💡 SUGGESTED IMPROVEMENTS:
+----------------------------------------------------------------------
+
+📌 Add User Control
+   Implement approval workflow where users review AI-generated posts before publishing
+
+📌 Define Success Metrics
+   Specify: engagement rate increase target, user adoption rate, content quality score
+```
+
+## API Usage
+
+### Basic Review
+```python
+review = board.review_spec(spec_text)
+print(board.format_review(review))
+```
+
+### Follow-Up Questions
+```python
+answer = board.ask_followup(
+    spec_text,
+    review,
+    "How should we handle edge cases?"
+)
+```
+
+### Get Improvements
+```python
+improvements = board.suggest_improvements(
+    spec_text,
+    focus_area="metrics"  # Optional focus
+)
+```
+
+## Why Agentic Matters
+
+**Rule-based** catches obvious issues.  
+**Agentic** understands your specific context and provides tailored feedback.
+
+Example:
+- Rule-based: "Missing metrics" (generic)
+- Agentic: "You mention 'improve engagement' but don't specify baseline engagement rate or target improvement. Consider: 'Increase average engagement rate from 2.3% to 3.5% within 3 months'" (specific)
+
+## Configuration
+
+Set environment variable:
+```bash
+export ANTHROPIC_API_KEY=your_key
+```
+
+Or pass directly:
+```python
+board = AgenticReviewBoard(api_key="your_key")
+```
+
+## Cost
+
+Uses Claude 3.5 Sonnet:
+- ~$0.01-0.05 per spec review
+- Worth it for the quality of feedback
+
+## Comparison
+
+| Feature | Rule-Based | Agentic |
+|---------|-----------|---------|
+| Setup | None | API key |
+| Cost | Free | ~$0.03/review |
+| Speed | Instant | 2-5 seconds |
+| Accuracy | Pattern matching | Understands context |
+| Follow-ups | No | Yes |
+| Improvements | Generic | Specific |
+| Evidence | No | Quotes spec |
+
+## Integration Ideas
+
+- **Slack bot** - Review specs in channels
+- **GitHub Action** - Auto-review PRs
+- **Notion integration** - Review docs inline
+- **CLI tool** - `review-spec my-prd.md`
+
+## Roadmap
+
+- [x] Agentic LLM-powered review
+- [x] Follow-up questions
+- [x] Improvement suggestions
+- [ ] Web interface for agentic version
+- [ ] Compare multiple specs
+- [ ] Track improvements over time
+- [ ] Team-specific training
+
+## License
+
+MIT
+
+---
+
+**The agentic version is the real deal. The rule-based version is a demo of what NOT to call "agentic."** 😉
 
 ## Example Output
 
