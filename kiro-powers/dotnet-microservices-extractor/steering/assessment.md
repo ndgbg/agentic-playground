@@ -598,9 +598,50 @@ Document:
 
 ---
 
-## Step 7: Complexity and Risk Scoring
+## Step 7: Team Structure and Conway's Law Analysis
 
-### 7a: Per-Service Complexity Score
+This step is critical for large organizations. Service boundaries that don't align with team structure will fail in practice regardless of technical merit.
+
+### 7a-team: Current Team Topology
+
+Map the current team structure against the codebase:
+
+```
+For each team or developer group:
+  - Which projects/namespaces do they primarily own?
+  - Which areas of the codebase do they modify most frequently? (check git log)
+  - What is the team size?
+  - What is their deployment cadence?
+  - Do they have on-call/operational responsibilities?
+```
+
+### 7a-team-2: Boundary Alignment Check
+
+For each proposed bounded context, evaluate:
+
+| Question | Impact |
+|----------|--------|
+| Can a single team own this service end-to-end? | If no, the boundary may be wrong |
+| Does this boundary split code that one team currently owns? | Creates handoff overhead |
+| Does this boundary merge code from multiple teams? | May cause ownership conflicts |
+| Does the team have the skills to operate this service independently? | Training/hiring needed |
+| Can the team handle the operational burden (on-call, monitoring, deployments)? | Capacity constraint |
+
+### 7a-team-3: Viability Assessment
+
+If proposed service boundaries cannot be cleanly mapped to teams, or if teams lack capacity for independent service ownership, flag this as a high-severity risk. Options:
+1. Adjust boundaries to match team structure
+2. Reorganize teams to match proposed boundaries (requires organizational buy-in)
+3. Reduce the number of services to match available team capacity
+4. Recommend modular monolith if team structure doesn't support microservices
+
+Include the team topology analysis in the assessment report under a dedicated section.
+
+---
+
+## Step 8: Complexity and Risk Scoring
+
+### 8a: Per-Service Complexity Score
 
 For each proposed microservice, calculate a complexity score:
 
@@ -621,17 +662,76 @@ Total score interpretation:
 - 41-55: Hard extraction
 - 56+: Very hard — consider breaking into smaller steps
 
-### 7b: Migration Order Algorithm
+### 8b: Migration Viability Gate
 
-Determine extraction order using this algorithm:
+Before calculating migration order, evaluate whether microservices extraction is justified. If any of the following conditions are true, recommend against decomposition and explain why:
 
-1. Calculate complexity score for each proposed service
-2. Calculate coupling score (sum of cross-boundary references)
-3. Identify dependency chains (Service A must be extracted before Service B)
-4. Sort by: lowest coupling first, then lowest complexity, respecting dependency chains
-5. The first service to extract should be the most isolated, least coupled one
+**Recommend AGAINST microservices if:**
 
-### 7c: Risk Register
+| Condition | Threshold | Rationale |
+|-----------|-----------|-----------|
+| Total project count | ≤ 3 | Too small to benefit from distribution overhead |
+| Total entity count | ≤ 15 | Insufficient domain complexity to justify service boundaries |
+| Proposed service count | ≤ 2 | Not enough distinct bounded contexts |
+| All complexity scores | < 15 (Easy) | Monolith is manageable as-is |
+| No team scaling problem | Single team, < 8 devs | Conway's Law doesn't demand splitting |
+| No independent deployment need | Single release cadence | Key microservices benefit is absent |
+| High cross-boundary coupling | > 60% of entities have cross-boundary refs | Will produce a distributed monolith |
+
+**Recommend CAUTION (modular monolith instead) if:**
+- 4-8 projects with moderate coupling — a modular monolith with clean boundaries may deliver 80% of the benefit at 20% of the cost
+- Team is < 4 developers — operational overhead of microservices will exceed development velocity gains
+- No existing CI/CD, containerization, or observability — infrastructure prerequisites are missing
+
+**When recommending against decomposition, suggest alternatives:**
+1. Modular monolith — enforce bounded contexts via project structure and access modifiers without network boundaries
+2. Vertical slice architecture — organize by feature within the monolith
+3. Strangler Fig for specific pain points — extract only the 1-2 components that genuinely need independent scaling or deployment
+4. Do nothing — if the monolith is working and the team is productive, document that finding
+
+Include the viability assessment in the Executive Summary of the report. The recommendation field should be one of:
+- **Proceed** — clear benefits, manageable complexity
+- **Proceed with Caution** — benefits exist but significant risks; consider phased approach
+- **Modular Monolith Recommended** — enforce boundaries without distribution
+- **Do Not Decompose** — monolith is appropriate for this codebase and team
+
+### 8c: Migration Order Algorithm
+
+Determine extraction order using this formula:
+
+```
+Migration Priority Score = 
+  (100 / Complexity Score) × 30                    [Lower complexity = higher priority]
+  + (1 / (Cross-Boundary References + 1)) × 25     [Fewer cross-refs = higher priority]
+  + (1 / (Inbound Dependencies + 1)) × 20          [Fewer dependents = higher priority]
+  + (Independent Deployability Factor × 15)         [0.0-1.0: can it run alone?]
+  + (Business Value Factor × 10)                    [0 (low), 1 (medium), 2 (high)]
+
+Where:
+  - Complexity Score: from Step 7a weighted calculation
+  - Cross-Boundary References: count of entities/APIs this service references in other services
+  - Inbound Dependencies: count of other services that call this service's APIs
+  - Independent Deployability Factor: 1.0 if no sync dependencies, 0.5 if 1-2, 0.0 if 3+
+  - Business Value Factor: user-provided or inferred from change frequency
+```
+
+Apply these ordering rules after scoring:
+1. Services with zero inbound dependencies go first (nothing breaks if they're extracted)
+2. Services that are depended upon by many others go last (extract consumers before providers)
+3. Break ties using complexity score (lower first)
+4. Never extract a service before its synchronous dependencies are available (as APIs or still in monolith)
+5. Identity/Auth service should be extracted early if multiple services need token validation
+6. Group related services that share transaction boundaries into the same migration phase
+
+Present the ordered list with scores:
+
+```
+| Order | Service | Complexity | Cross-Refs | Inbound Deps | Priority Score | Rationale |
+|-------|---------|-----------|------------|--------------|----------------|-----------|
+| 1     | ...     | ...       | ...        | ...          | ...            | ...       |
+```
+
+### 8d: Risk Register
 
 For each proposed service, document risks:
 
@@ -644,7 +744,7 @@ For each proposed service, document risks:
 
 ---
 
-## Step 8: Generate Assessment Report
+## Step 9: Generate Assessment Report
 
 Present a comprehensive report to the user. The report must include ALL of the following sections:
 
@@ -653,10 +753,32 @@ Present a comprehensive report to the user. The report must include ALL of the f
 
 ### 1. Executive Summary
 - One paragraph overview of the monolith
-- Number of proposed microservices
+- Migration viability recommendation (Proceed / Proceed with Caution / Modular Monolith Recommended / Do Not Decompose)
+- If "Do Not Decompose" or "Modular Monolith Recommended", explain why and suggest alternatives — do not proceed to transformation
+- Number of proposed microservices (if proceeding)
 - Overall complexity rating (Easy/Medium/Hard/Very Hard)
-- Estimated effort range
+- Estimated effort (see Effort Estimation below)
 - Key risks in 2-3 bullet points
+
+### Effort Estimation
+
+Map the sum of all per-service complexity scores to an effort range:
+
+| Total Complexity Score | Effort Estimate | Typical Duration (1 team) | Description |
+|----------------------|-----------------|--------------------------|-------------|
+| 15-50 | Small | 2-6 weeks | Few services, low coupling, straightforward extraction |
+| 51-120 | Medium | 6-16 weeks | Multiple services, moderate coupling, some refactoring needed |
+| 121-250 | Large | 4-8 months | Many services, significant coupling, database splitting required |
+| 251+ | Very Large | 8-18 months | Complex system, extensive refactoring, phased migration essential |
+
+Adjust the estimate based on these multipliers:
+- Framework migration required (.NET Framework → .NET 8): multiply by 1.5x
+- No existing test coverage: multiply by 1.3x (need characterization tests first)
+- Stored procedure heavy (20+): multiply by 1.2x
+- Team unfamiliar with microservices: multiply by 1.3x
+- Multiple databases or database vendors: multiply by 1.2x
+
+Present the estimate as a range (e.g., "Medium: 8-14 weeks") with the multipliers that apply.
 
 ### 2. Codebase Overview
 - Solution structure diagram (text-based tree)
@@ -709,6 +831,14 @@ For EACH context:
 - Authorization model summary
 - Identity data ownership
 - Security-sensitive cross-boundary flows
+
+### 8.5. Team Structure Analysis
+- Current team topology mapped to codebase ownership
+- Proposed service-to-team mapping
+- Boundary alignment assessment (do proposed services match team structure?)
+- Capacity assessment (can teams handle independent service ownership?)
+- Skills gap analysis (what training or hiring is needed?)
+- If boundaries don't align with teams, flag as high risk and recommend adjustments
 
 ### 9. Proposed Microservices
 For EACH proposed service:

@@ -427,7 +427,159 @@ Rollback Time Estimate: {How long to roll back}
 Data Considerations: {Any data that needs to be migrated back}
 ```
 
-### Step 9: Present the Complete Plan
+### Step 9: Test Coverage Strategy During Migration
+
+Maintaining test coverage during extraction is critical. Tests that worked in the monolith may break when boundaries change, and new integration points need coverage.
+
+#### 9a: Characterization Tests (Before Extraction)
+
+Before extracting any service, write characterization tests that capture the current behavior of the code being extracted:
+
+```
+For each service being extracted:
+  1. Identify all public API endpoints that will move to the new service
+  2. Write integration tests against the MONOLITH that exercise these endpoints
+  3. Capture request/response pairs as golden files
+  4. These tests become the acceptance criteria for the new service
+  5. The new service must pass the same tests (with URL changes)
+```
+
+```csharp
+// Characterization test example — run against monolith first, then against new service
+[Fact]
+public async Task CreateOrder_WithValidRequest_ReturnsCreatedOrder()
+{
+    var request = new CreateOrderRequest { /* ... */ };
+    var response = await _client.PostAsJsonAsync("/api/orders", request);
+    response.StatusCode.Should().Be(HttpStatusCode.Created);
+    var order = await response.Content.ReadFromJsonAsync<OrderResponse>();
+    order.Should().NotBeNull();
+    order.Status.Should().Be("Pending");
+}
+```
+
+#### 9b: Contract Tests (Between Services)
+
+Use consumer-driven contract tests to verify that service APIs don't break their consumers:
+
+```
+Tool: Pact (PactNet for .NET)
+
+Flow:
+  1. Consumer (e.g., OrderService) defines expected API contract with Provider (e.g., ProductService)
+  2. Consumer generates a Pact file describing expected interactions
+  3. Provider verifies it can fulfill the contract
+  4. Run contract tests in CI — broken contracts block deployment
+
+When to add:
+  - Every synchronous service-to-service API call needs a contract test
+  - Add contract tests BEFORE cutting over traffic to the new service
+```
+
+```csharp
+// Consumer side (OrderService tests)
+[Fact]
+public async Task GetProduct_ReturnsExpectedProduct()
+{
+    _pactBuilder
+        .UponReceiving("a request for product by ID")
+        .WithRequest(HttpMethod.Get, "/api/products/123")
+        .WillRespond()
+        .WithStatus(HttpStatusCode.OK)
+        .WithJsonBody(new { id = "123", name = "Widget", price = 9.99 });
+
+    await _pactBuilder.VerifyAsync(async ctx =>
+    {
+        var client = new ProductServiceClient(ctx.MockServerUri);
+        var product = await client.GetProductAsync("123");
+        product.Name.Should().Be("Widget");
+    });
+}
+```
+
+#### 9c: Integration Tests That Span Boundaries
+
+Existing integration tests that touch entities from multiple bounded contexts will break after extraction. Plan for this:
+
+```
+For each existing integration test:
+  1. Identify which services it touches
+  2. If single service → move test to that service's test project
+  3. If multiple services → split into:
+     a. Per-service integration tests (mock external service dependencies)
+     b. Contract tests (verify API compatibility)
+     c. End-to-end tests (run against full docker-compose environment, sparingly)
+  4. Never mock the database in integration tests — use Testcontainers or EF InMemory
+```
+
+#### 9d: Test Migration Checklist
+
+```
+Before extracting each service:
+- [ ] Characterization tests written and passing against monolith
+- [ ] Contract tests defined for all consumed APIs
+
+During extraction:
+- [ ] Service-specific unit tests written for new code
+- [ ] Integration tests using Testcontainers for database
+- [ ] Contract tests passing (consumer and provider sides)
+- [ ] Existing monolith tests still pass (monolith functionality unchanged)
+
+After extraction:
+- [ ] Characterization tests pass against new service
+- [ ] Remove or update monolith tests that covered extracted functionality
+- [ ] End-to-end smoke tests pass in docker-compose environment
+```
+
+### Step 10: API Versioning During Migration
+
+When extracting a service, existing consumers of the monolith's endpoints must not break. Plan for API coexistence.
+
+#### Versioning Strategy
+
+Choose one approach and apply consistently:
+
+| Strategy | When to Use | Implementation |
+|----------|-------------|----------------|
+| URL path versioning (`/api/v1/orders`) | Simple, explicit, easy to route | `[Route("api/v{version:apiVersion}/[controller]")]` |
+| Header versioning (`Api-Version: 2.0`) | Cleaner URLs, harder to test in browser | `[ApiVersion("2.0")]` with header reader |
+| Gateway routing (transparent) | Clients don't change, gateway handles it | YARP/Ocelot routes by path to different backends |
+
+Recommended: Gateway routing for internal services, URL versioning for external APIs.
+
+#### Backward Compatibility Rules
+
+During migration, the new service API must be backward compatible with the monolith API:
+
+```
+DO:
+  - Add new fields to responses (non-breaking)
+  - Add new optional fields to requests (non-breaking)
+  - Support both old and new field names during transition (aliases)
+  - Return the same HTTP status codes for the same scenarios
+
+DON'T:
+  - Remove fields from responses (breaking)
+  - Make previously optional request fields required (breaking)
+  - Change field types (breaking)
+  - Change URL paths without gateway routing (breaking)
+  - Change error response format (breaking)
+```
+
+#### Deprecation Timeline
+
+```
+1. Deploy new service with new API alongside monolith
+2. Add Deprecation header to monolith responses: "Deprecation: true"
+3. Log all requests to deprecated endpoints
+4. Notify consumers with migration timeline (minimum 30 days for external APIs)
+5. Monitor deprecated endpoint traffic — don't remove until traffic is zero
+6. Remove deprecated endpoints from monolith
+```
+
+Consult the traffic-cutover steering file for detailed routing and canary deployment strategies.
+
+### Step 11: Present the Complete Plan
 
 Present to the user:
 
@@ -440,7 +592,10 @@ Present to the user:
 7. API gateway / BFF recommendation
 8. Infrastructure plan
 9. Rollback strategy per extraction step
-10. Migration order with dependencies and estimated effort
+10. Test coverage strategy (characterization tests, contract tests, migration plan)
+11. API versioning and backward compatibility plan
+12. Traffic cutover strategy (feature flags, canary deployment, parallel run)
+13. Migration order with dependencies and estimated effort
 
 **Get explicit approval before executing. The user may want to adjust boundaries, reorder migrations, or modify the communication strategy.**
 
