@@ -20,11 +20,20 @@ Rather than blindly splitting code, this power performs deep analysis of domain 
 
 ## Available Steering Files
 
-This power has seven steering files for the phased workflow:
+This power has twelve steering files organized for the phased workflow:
 
-### Core Workflow
-- **assessment** — Phase 1: Codebase scanning, dependency analysis, bounded context identification, team structure analysis, complexity metrics, migration viability gate, and comprehensive assessment report generation
-- **transformation** — Phase 2: Microservices breakdown planning (including test coverage strategy, API versioning, and traffic cutover planning) and Phase 3: Executing the code transformation with full project scaffolding
+### Core Workflow — Assessment (Phase 1)
+- **assessment** — Entry point and router for the assessment phase. Directs to the three sub-files below.
+- **assessment-discovery** — Phase 1a: Project structure scanning, configuration inventory, database artifacts, infrastructure files, and full technology stack fingerprinting (Steps 1-2)
+- **assessment-analysis** — Phase 1b: Domain model analysis, bounded context identification, dependency/coupling analysis, communication patterns, and security analysis (Steps 3-6)
+- **assessment-scoring** — Phase 1c: Team structure and Conway's Law analysis, per-service complexity scoring, migration viability gate, effort estimation with explicit multipliers, migration order algorithm, and assessment report generation (Steps 7-9)
+
+### Core Workflow — Transformation (Phases 2-3)
+- **transformation** — Phase 2: Microservices breakdown planning (API versioning, backward compatibility) and Phase 3: Executing the code transformation with full project scaffolding
+
+### Critical Pre-Execution Guides
+- **testing-strategy** — Characterization tests (before extraction), contract tests (during extraction), integration tests with Testcontainers, and per-service test migration checklist. **Read before starting Phase 3.**
+- **distributed-transactions** — Saga (orchestration and choreography), outbox pattern, inbox pattern, event-driven denormalization, and anti-patterns. Consult when the assessment identifies transactional dependencies crossing service boundaries.
 
 ### Reference Guides
 - **patterns** — Core reference for DI, data access, communication, anti-patterns, and framework migration patterns. Index to specialized sub-files.
@@ -36,7 +45,7 @@ This power has seven steering files for the phased workflow:
 - **database-migration** — Database decomposition, schema splitting, data migration scripts, stored procedure migration, and eventual consistency patterns
 - **traffic-cutover** — Strangler Fig implementation, API gateway routing, feature flags, canary deployment, parallel-run validation, and rollback triggers
 
-Read the core workflow files in order. Start with assessment, then move to transformation once the assessment is reviewed and approved. Consult reference and supporting guides as needed during any phase.
+Read the core workflow files in order. Start with assessment (which routes to its three sub-files), then read testing-strategy before starting transformation. Consult distributed-transactions when cross-service transactional dependencies are identified. Consult reference and supporting guides as needed during any phase.
 
 ## Workflow Overview
 
@@ -104,17 +113,21 @@ Execute the transformation:
 
 When this power is activated for a .NET codebase:
 
-1. Read the **assessment** steering file first
-2. Follow every step in the assessment phase — do not skip any analysis
-3. Present the complete assessment report to the user
-4. **If the viability gate recommends against decomposition, present that finding and do not proceed to transformation unless the user explicitly overrides**
-5. Wait for explicit user approval before proceeding
-6. Read the **transformation** steering file
-7. Present the transformation plan for approval (including test, versioning, and cutover strategies)
-8. Execute the transformation only after plan approval
-9. Consult **patterns** (and its sub-files) whenever encountering a specific .NET pattern during any phase
-10. Consult **database-migration** when planning or executing data layer changes
-11. Consult **traffic-cutover** when planning or executing the production migration
+1. Read the **assessment** steering file (it routes to three focused sub-files)
+2. Execute **assessment-discovery** (Steps 1-2: project scanning, tech stack)
+3. Execute **assessment-analysis** (Steps 3-6: domain model, dependencies, coupling, security)
+4. Execute **assessment-scoring** (Steps 7-9: team analysis, complexity, viability gate, report)
+5. Present the complete assessment report to the user
+6. **If the viability gate recommends against decomposition, present that finding and do not proceed to transformation unless the user explicitly overrides**
+7. Wait for explicit user approval before proceeding
+8. Read the **testing-strategy** steering file — verify the pre-extraction checklist before any code changes
+9. Read the **distributed-transactions** steering file if the assessment identified cross-service transactional dependencies
+10. Read the **transformation** steering file
+11. Present the transformation plan for approval (including test, versioning, and cutover strategies)
+12. Execute the transformation only after plan approval
+13. Consult **patterns** (and its sub-files) whenever encountering a specific .NET pattern during any phase
+14. Consult **database-migration** when planning or executing data layer changes
+15. Consult **traffic-cutover** when planning or executing the production migration
 
 ## Best Practices
 
@@ -129,12 +142,14 @@ When this power is activated for a .NET codebase:
 - Generate integration points (API clients, message contracts) alongside the services
 - Always consider the Strangler Fig pattern — the monolith and microservices can coexist during migration
 - Plan for rollback at every step — each extraction should be reversible
-- Favor eventual consistency over distributed transactions
+- Favor eventual consistency over distributed transactions — use sagas and the outbox pattern for cross-service workflows (see distributed-transactions steering file)
+- Never use two-phase commit (2PC) across service boundaries
 - Design APIs contract-first before implementing
 - Include health checks and observability from day one
 - Never create a distributed monolith — if services can't be deployed independently, the boundaries are wrong
 - Consider team structure and Conway's Law when defining service boundaries — boundaries that don't match teams will fail
-- Write characterization tests before extracting, contract tests during, and remove stale tests after
+- **Write characterization tests before extracting** — read the testing-strategy steering file before starting Phase 3
+- Write contract tests for every synchronous service-to-service API call
 - Plan API versioning and backward compatibility before cutting over traffic
 - Use feature flags and canary deployments for production cutover — never big-bang switch
 - Document every decision and trade-off in the assessment and plan
